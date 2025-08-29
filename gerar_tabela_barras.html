@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Planilha com Código de Barras</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <style>
+      body {
+        font-family: "Roboto", sans-serif;
+        background-color: #fff;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      h2 {
+        color: #4b0082;
+        margin: 10px;
+      }
+
+      .explicacao {
+        max-width: 700px;
+        background-color: #e6e0f8;
+        color: #2e003e;
+        padding: 15px 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      }
+
+      label {
+        font-weight: bold;
+        display: block;
+        margin: 10px 0 5px;
+      }
+
+      input[type="file"],
+      input[type="text"] {
+        padding: 10px;
+        width: 100%;
+        max-width: 400px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        margin-bottom: 10px;
+        box-sizing: border-box;
+      }
+
+      button {
+        padding: 12px 25px;
+        border-radius: 10px;
+        border: none;
+        background-color: #4b0082;
+        color: #fff;
+        font-weight: bold;
+        margin: 5px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      button:hover {
+        background-color: #6a0dad;
+      }
+
+      table {
+        border-collapse: collapse;
+        margin-top: 20px;
+        width: 100%;
+        max-width: 1000px;
+        background-color: #fff;
+        border-radius: 10px;
+        overflow: hidden;
+      }
+
+      th, td {
+        border: 1px solid #ccc;
+        padding: 10px;
+        text-align: center;
+        vertical-align: middle;
+      }
+
+      canvas {
+        display: block;
+        margin: auto;
+      }
+
+      .cabecalhoTabela {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 15px;
+      }
+
+      .cabecalhoTabela img {
+        height: 60px;
+      }
+
+      .cabecalhoTabela span {
+        font-size: 20px;
+        font-weight: bold;
+        color: #4b0082;
+      }
+
+      @media print {
+        body * {
+          visibility: hidden;
+        }
+        #tabelaResultado, #tabelaResultado * {
+          visibility: visible;
+        }
+        #tabelaResultado {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Gerar Planilha com Código de Barras</h2>
+
+    <div class="explicacao">
+      <p>
+        Esta ferramenta permite gerar códigos de barras diretamente a partir de um arquivo XLSX. 
+        Basta selecionar o arquivo e informar quais colunas contêm os códigos de barras 
+        (até 3 colunas podem ser utilizadas). Após clicar em "Gerar", a planilha será exibida com os códigos e poderá ser impressa.
+      </p>
+    </div>
+
+    <label>Arquivo XLSX:</label>
+    <input type="file" id="xlsxInput" accept=".xlsx" />
+
+    <label>Colunas com Códigos de Barras (até 3):</label>
+    <input type="text" id="coluna1" placeholder="Coluna 1 (ex: Código)" />
+    <input type="text" id="coluna2" placeholder="Coluna 2 (opcional)" />
+    <input type="text" id="coluna3" placeholder="Coluna 3 (opcional)" />
+
+    <div>
+      <button onclick="processarXLSX()">Gerar</button>
+      <button onclick="window.print()">Imprimir</button>
+    </div>
+
+    <div id="tabelaResultado"></div>
+
+    <script>
+      function processarXLSX() {
+        const input = document.getElementById("xlsxInput").files[0];
+        if (!input) {
+          alert("Selecione um arquivo XLSX.");
+          return;
+        }
+
+        const col1 = document.getElementById("coluna1").value.trim();
+        const col2 = document.getElementById("coluna2").value.trim();
+        const col3 = document.getElementById("coluna3").value.trim();
+        const colunasCodigo = [col1, col2, col3].filter(Boolean);
+
+        if (colunasCodigo.length === 0) {
+          alert("Informe pelo menos uma coluna de código de barras.");
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: "array" });
+
+          const sheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[sheetName];
+
+          const linhas = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+          const colunas = Object.keys(linhas[0] || {});
+
+          const colunasNaoEncontradas = colunasCodigo.filter(c => !colunas.includes(c));
+          if (colunasNaoEncontradas.length > 0) {
+            alert("As colunas não foram encontradas: " + colunasNaoEncontradas.join(", "));
+            return;
+          }
+
+          const div = document.getElementById("tabelaResultado");
+          div.innerHTML = "";
+
+          // Cabeçalho com logo e nome do arquivo
+          const cabecalhoDiv = document.createElement("div");
+          cabecalhoDiv.className = "cabecalhoTabela";
+
+          const img = document.createElement("img");
+          img.src = "ponsse.png";
+          img.alt = "Logo Ponsse";
+          cabecalhoDiv.appendChild(img);
+
+          const titulo = document.createElement("span");
+          titulo.textContent = input.name;
+          cabecalhoDiv.appendChild(titulo);
+
+          div.appendChild(cabecalhoDiv);
+
+          // Criar tabela
+          const table = document.createElement("table");
+          const thead = document.createElement("thead");
+          const tbody = document.createElement("tbody");
+
+          const headerRow = document.createElement("tr");
+          colunas.forEach(c => {
+            const th = document.createElement("th");
+            th.textContent = c;
+            headerRow.appendChild(th);
+          });
+          thead.appendChild(headerRow);
+
+          linhas.forEach(linha => {
+            const tr = document.createElement("tr");
+            colunas.forEach(c => {
+              const td = document.createElement("td");
+
+              if (colunasCodigo.includes(c) && linha[c]) {
+                const canvas = document.createElement("canvas");
+                JsBarcode(canvas, String(linha[c]), {
+                  format: "CODE128",
+                  displayValue: true,
+                  height: 40,
+                  fontSize: 14
+                });
+                td.appendChild(canvas);
+              } else {
+                td.textContent = linha[c] || "";
+              }
+
+              tr.appendChild(td);
+            });
+            tbody.appendChild(tr);
+          });
+
+          table.appendChild(thead);
+          table.appendChild(tbody);
+
+          div.appendChild(table);
+        };
+
+        reader.readAsArrayBuffer(input);
+      }
+    </script>
+  </body>
+</html>

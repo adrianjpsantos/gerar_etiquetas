@@ -1,0 +1,82 @@
+/* Estilos para impressão */
+/* A @page rule permite configurar o tamanho da página de impressão, margens, etc. */
+@media print {
+        @page {
+            size: auto;
+    margin: 1cm; /* Define a margem de 1 cm em toda a página */
+}
+#print-container > div {
+          page-break-after: always;
+        }
+        #print-container > div:last-child {
+          page-break-after: auto;
+        }
+
+body {
+    font-family: "Roboto", sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.A4 {
+    width: 100%; /* Ajusta a largura para a página inteira */
+    height: auto; /* A altura será definida pelo conteúdo */
+    border: none; /* Remove a borda para impressão */
+}
+
+.nomeLocal {
+    margin: 0;
+    font-size: 130pt; /* Use pontos (pt) para tamanhos de fonte em impressão */
+    background: black;
+    color: white;
+    font-weight: 700;
+    text-align: center;
+    padding: 5mm;
+}
+
+/* Use Flexbox para um layout mais previsível na impressão */
+.items {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.item {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid black;
+    gap: 2mm;
+    padding: 2mm;
+    /* Divide a largura em 3 colunas, com um pequeno espaço entre elas */
+    width: 31%; 
+    margin: 2mm;
+    box-sizing: border-box; /* Garante que o padding e a borda não aumentem a largura total */
+        justify-content: center;
+    align-items: center;
+}
+
+.nomeDoProduto {
+    color: black;
+    font-size: 12pt;
+    text-align: center;
+    /* As propriedades -webkit não são totalmente confiáveis na impressão.
+    É melhor deixar o texto fluir naturalmente. */
+    overflow: visible;
+    display: block; 
+}
+
+/* Esconde elementos que não devem ser impressos, se houver */
+.no-print {
+    display: none !important;
+}
+
+.cabecalho{
+    display: flex;
+    justify-content: space-between;
+    height: 40pt;
+    padding-bottom: 10pt;
+}
+
+.logo{
+    height: auto;
+}
+}

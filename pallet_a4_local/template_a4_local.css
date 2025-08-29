@@ -1,0 +1,76 @@
+
+
+body {
+    font-family: "Roboto", sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.A4 {
+    width: 100%; /* Ajusta a largura para a página inteira */
+    height: auto; /* A altura será definida pelo conteúdo */
+    border: none; /* Remove a borda para impressão */
+}
+
+.nomeLocal {
+    margin: 0;
+    font-size: 140pt; /* Use pontos (pt) para tamanhos de fonte em impressão */
+    background: black;
+    color: white;
+    font-weight: 700;
+    text-align: center;
+    padding: 10mm;
+}
+
+.site {
+    margin: 0;
+    font-size: 130pt; /* Use pontos (pt) para tamanhos de fonte em impressão */
+    background: white;
+    color: black;
+    font-weight: 700;
+    text-align: center;
+    padding: 5mm;
+    border: 5px solid black;
+}
+
+/* Use Flexbox para um layout mais previsível na impressão */
+.items {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.item {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    border: 1px solid black;
+    padding: 5mm;
+    /* Divide a largura em 3 colunas, com um pequeno espaço entre elas */
+    width: 32%; 
+    margin: 2mm;
+    box-sizing: border-box; /* Garante que o padding e a borda não aumentem a largura total */
+}
+
+.nomeDoProduto {
+    color: black;
+    font-size: 25pt;
+    text-align: center;
+    /* As propriedades -webkit não são totalmente confiáveis na impressão.
+    É melhor deixar o texto fluir naturalmente. */
+    overflow: visible;
+    display: block; 
+}
+
+
+.cabecalho{
+    display: flex;
+    justify-content: space-between;
+    height: 50pt;
+    padding-bottom: 10pt;
+}
+
+.logo{
+    height: auto;
+}

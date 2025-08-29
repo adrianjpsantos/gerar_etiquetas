@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Atalhos Rápidos</title>
+  <style>
+    :root{
+      --bg: #0f172a;           /* slate-900 */
+      --card: #111827;         /* gray-900 */
+      --accent: #22d3ee;       /* cyan-400 */
+      --accent-2: #a78bfa;     /* violet-400 */
+      --text: #e5e7eb;         /* gray-200 */
+      --muted: #94a3b8;        /* slate-400 */
+      --ring: rgba(34,211,238,.45);
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+
+    *{ box-sizing: border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      background: radial-gradient(1200px 600px at 10% -10%, rgba(167,139,250,.15), transparent),
+                  radial-gradient(1200px 600px at 110% 110%, rgba(34,211,238,.12), transparent),
+                  var(--bg);
+      color:var(--text);
+      display:flex; align-items:center; justify-content:center;
+      padding:32px;
+    }
+
+    .container{
+      width:min(1100px, 100%);
+    }
+
+    header{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:16px; margin-bottom:22px;
+    }
+    header h1{
+      font-size: clamp(1.25rem, 1.2rem + 1.2vw, 2rem);
+      margin:0;
+      letter-spacing:.3px;
+    }
+    header p{ margin:0; color:var(--muted); font-size:.95rem; }
+
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap:18px;
+    }
+
+    /* Cartão/ botão quadrado */
+    .tile{
+      position:relative;
+      display:block;
+      background:linear-gradient(145deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:18px;
+      box-shadow: var(--shadow);
+      text-decoration:none;
+      color:inherit;
+      padding:16px;
+      aspect-ratio: 1 / 1; /* mantém quadrado */
+      overflow:hidden;
+      isolation:isolate;
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+    .tile:hover{ transform: translateY(-3px); box-shadow: 0 16px 36px rgba(0,0,0,.45); }
+    .tile:focus{ outline:none; box-shadow: 0 0 0 4px var(--ring), var(--shadow); border-color: transparent; }
+
+    .tile .icon{
+      font-size: clamp(26px, 2.2vw, 34px);
+      line-height:1;
+      opacity:.95;
+    }
+    .tile .label{
+      position:absolute; left:16px; right:16px; bottom:16px;
+      font-weight:600; letter-spacing:.3px; font-size: .98rem;
+      text-wrap: balance;
+    }
+
+    /* Badges de cor opcional */
+    .tile[data-variant="cyan"]  { border-color: rgba(34,211,238,.25); }
+    .tile[data-variant="violet"]{ border-color: rgba(167,139,250,.25); }
+    .tile[data-variant="amber"] { border-color: rgba(251,191,36,.25); }
+    .tile[data-variant="rose"]  { border-color: rgba(244,63,94,.25); }
+
+    .tile::after{
+      content:""; position:absolute; inset:-30%; z-index:-1;
+      background: radial-gradient(400px 220px at 100% 0%, var(--accent-2), transparent),
+                  radial-gradient(340px 200px at 0% 100%, var(--accent), transparent);
+      opacity:.08; transition: opacity .2s ease;
+    }
+    .tile:hover::after{ opacity:.16; }
+
+    /* Acessibilidade: foco visível para navegação por teclado */
+    @media (prefers-reduced-motion: reduce){
+      .tile, .tile::after{ transition: none; }
+    }
+
+    footer{ margin-top:20px; text-align:center; color:var(--muted); font-size:.9rem; }
+    footer a{ color:var(--text); opacity:.9 }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <img src="./ponsse.png" alt="" srcset="">
+        <h1>Gerar Etiquetas</h1>
+        <p>Clique em um bloco para abrir o link em uma nova aba.</p>
+      </div>
+    </header>
+
+    <main class="grid">
+      <!-- Exemplo de botões quadrados: substitua os href pelos seus links -->
+      <a class="tile" href="./etiqueta_bin/index.html" target="_blank" rel="noopener" data-variant="cyan" aria-label="Gerar Etiqueta para caixa bin">
+        <div class="icon">🖨️</div>
+        <div class="label">ETIQUETA CAIXA BIN</div>
+      </a>
+        <a class="tile" href="./etiqueta-separacao/index.html" target="_blank" rel="noopener" data-variant="amber" aria-label="Gerar Etiqueta para separação">
+        <div class="icon">🔫</div>
+        <div class="label">ETIQUETA SEPARAÇÃO</div>
+      </a>
+    <a class="tile" href="./pallet_a4_local/index.html" target="_blank" rel="noopener" data-variant="rose" aria-label="Gerar Folha de Localização Pallet">
+        <div class="icon">📦</div>
+        <div class="label">ETIQUETA LOCAL PALLET</div>
+      </a>
+          <a class="tile" href="./pallet_a4/index.html" target="_blank" rel="noopener" data-variant="violet" aria-label="Gerar Folha de Localização Pallet com os produtos">
+        <div class="icon">📋</div>
+        <div class="label">ETIQUETA LOCAL PALLET COM AS PEÇAS</div>
+      </a>
+        <a class="tile" href="./gerar_tabela_barras.html" target="_blank" rel="noopener" data-variant="cyan" aria-label="Gerar planilha com codigo de barra">
+        <div class="icon">📋</div>
+        <div class="label">PLANILHA COM CODIGO DE BARRA</div>
+      </a>
+  </div>
+</body>
+</html>

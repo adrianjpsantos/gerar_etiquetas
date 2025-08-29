@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gerador de Etiquetas A4</title>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="template_a4_local.css"
+      media="screen"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="template_a4_local_print.css"
+      media="print"
+    />
+
+    <style>
+      body {
+        font-family: "Roboto", sans-serif;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background: linear-gradient(135deg, #4b0082, #2e003e);
+      }
+
+      .controls {
+        background: rgba(75, 0, 130, 0.9);
+        color: #fff;
+        padding: 25px;
+                margin: 30px;
+
+        border-radius: 20px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+        max-width: 500px;
+        width: 90%;
+      }
+
+      .controls h1 {
+        margin: 0;
+        font-size: 1.8rem;
+      }
+
+      .controls p,
+      .controls input,
+      .controls button {
+        font-size: 1rem;
+      }
+
+      .controls input {
+        padding: 10px;
+        border-radius: 10px;
+        border: none;
+        width: 80%;
+      }
+
+      .controls button {
+        padding: 12px 20px;
+        border-radius: 10px;
+        border: none;
+        background-color: #6a0dad;
+        color: #fff;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.3s ease;
+      }
+
+      .controls button:hover {
+        background-color: #7b1fa2;
+      }
+
+      #print-container {
+        display: block;
+        width: 100%;
+                background: white;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="controls no-print">
+      <h1>Gerar Folhas com Local e Items do Pallet</h1>
+      <p>
+        Selecione um arquivo XLSX com as colunas: <strong>Localização</strong>,
+        <strong>Número do item</strong> e <strong>Nome do produto</strong>.
+      </p>
+      <input type="file" id="fileUpload" accept=".xlsx" />
+      <button onclick="handleFileUpload()">Gerar e Imprimir</button>
+    </div>
+
+    <div id="print-container"></div>
+
+    <script>
+      function handleFileUpload() {
+        const fileUpload = document.getElementById("fileUpload");
+        const file = fileUpload.files[0];
+
+        if (!file) {
+          alert("Por favor, selecione um arquivo XLSX.");
+          return;
+        }
+
+        const fileExtension = file.name.split(".").pop().toLowerCase();
+        if (fileExtension !== "xlsx") {
+          alert("Por favor, envie um arquivo XLSX válido.");
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: "array" });
+          const sheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[sheetName];
+          const linhas = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+
+          const linhasNormalizadas = linhas.map(linha => {
+            const obj = {};
+            for (let chave in linha) {
+              obj[chave.trim().toLowerCase()] = linha[chave];
+            }
+            return obj;
+          });
+
+          const locais = getItemsByLocation(linhasNormalizadas);
+          gerarFolhasA4(locais);
+        };
+        reader.readAsArrayBuffer(file);
+      }
+
+      function getItemsByLocation(linhas) {
+        let locais = [];
+        linhas.forEach(linha => {
+          const idx = localIndex(linha, locais);
+
+          if (idx > -1) {
+            locais[idx].items.push({
+              numeroDoItem: linha["número do item"],
+              nomeDoProduto: linha["nome do produto"]
+            });
+          } else {
+            locais.push({
+              nomeLocal: linha["localização"],
+              items: [{
+                numeroDoItem: linha["número do item"],
+                nomeDoProduto: linha["nome do produto"]
+              }]
+            });
+          }
+        });
+        return locais;
+      }
+
+      function gerarFolhasA4(locais) {
+        const printContainer = document.getElementById("print-container");
+        printContainer.innerHTML = "";
+
+        locais.forEach(local => {
+          const folhaA4 = document.createElement("div");
+          folhaA4.className = "A4";
+
+          const cabecalho = document.createElement('div');
+          cabecalho.className = "cabecalho";
+          cabecalho.innerHTML = '<img class="logo" src="./../ponsse.png" alt="">';
+
+          const barcodeSvgLocal = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+          cabecalho.appendChild(barcodeSvgLocal);
+
+          if (local.nomeLocal) {
+            JsBarcode(barcodeSvgLocal, String(local.nomeLocal), {
+              format: "CODE128",
+              displayValue: true,
+              fontSize: 11,
+              width: 1,
+              height: 30
+            });
+          }
+
+          folhaA4.appendChild(cabecalho);
+
+          const nomeLocalP = document.createElement("p");
+          nomeLocalP.className = "nomeLocal";
+          nomeLocalP.textContent = local.nomeLocal;
+          folhaA4.appendChild(nomeLocalP);
+
+          const itemsDiv = document.createElement("div");
+          itemsDiv.className = "items";
+
+          local.items.forEach(item => {
+            const itemDiv = document.createElement("div");
+            itemDiv.className = "item";
+
+            const nomeDoProdutoDiv = document.createElement("div");
+            nomeDoProdutoDiv.className = "nomeDoProduto";
+            nomeDoProdutoDiv.textContent = item.nomeDoProduto;
+            itemDiv.appendChild(nomeDoProdutoDiv);
+
+            const barcodeSvgItem = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            barcodeSvgItem.classList.add("numeroDoProduto");
+            itemDiv.appendChild(barcodeSvgItem);
+
+            if (item.numeroDoItem) {
+              JsBarcode(barcodeSvgItem, String(item.numeroDoItem), {
+                format: "CODE128",
+                displayValue: true,
+                fontSize: 11,
+                width: 1,
+                height: 30
+              });
+            }
+
+            itemsDiv.appendChild(itemDiv);
+          });
+
+          folhaA4.appendChild(itemsDiv);
+          printContainer.appendChild(folhaA4);
+        });
+
+        // window.print(); // não alterado
+      }
+
+      function localIndex(linha, locais) {
+        return locais.findIndex(local => local.nomeLocal === linha["localização"]);
+      }
+    </script>
+  </body>
+</html>

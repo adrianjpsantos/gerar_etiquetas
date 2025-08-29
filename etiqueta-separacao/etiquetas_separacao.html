@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Etiquetas</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+      }
+      #barcodes-container {
+        margin: 0;
+        padding: 0;
+      }
+
+      .etiqueta-container {
+        /* Mudanças aqui para uma etiqueta por linha */
+        text-align: center;
+        display: block;
+        margin: 0 auto;
+        padding: 0;
+        height: 5cm;
+        box-sizing: border-box;
+      }
+
+      .etiqueta-container img {
+        margin: 0 auto;
+      }
+
+      h1 {
+        margin: 0;
+        margin-top: 5px;
+        font-size: medium;
+      }
+
+      p {
+        margin: 2px 0;
+        font-size: small;
+      }
+
+      @media print {
+        @page {
+          size: auto;
+          margin: 0;
+          margin-top: 20px;
+        }
+        #barcodes-container {
+          margin: 0;
+          padding: 0;
+        }
+        #barcodes-container > div {
+          page-break-after: always;
+        }
+        #barcodes-container > div:last-child {
+          page-break-after: auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="barcodes-container"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
+    <script>
+      function getParameterByName(name) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(name);
+      }
+
+      function generateBarcodes(etiquetas, altura, proporcao, transferencia) {
+        const container = document.getElementById("barcodes-container");
+
+        etiquetas.forEach((etiqueta) => {
+          const etiquetaContainer = document.createElement("div");
+          etiquetaContainer.className = "etiqueta-container";
+          container.appendChild(etiquetaContainer);
+
+          // Número da transferência
+          if (transferencia) {
+            const transferenciaP = document.createElement("p");
+            transferenciaP.textContent = "Transferência: " + transferencia;
+            etiquetaContainer.appendChild(transferenciaP);
+          }
+
+          // Número do item como código de barras
+          if (etiqueta["numeroItem"]) {
+            const img = document.createElement("img");
+            etiquetaContainer.appendChild(img);
+            JsBarcode(img, etiqueta["numeroItem"], {
+              format: "code39",
+              width: proporcao,
+              height: altura,
+              displayValue: true,
+            });
+          }
+
+          // Descrição
+          if (etiqueta["descricao"]) {
+            const descricao = document.createElement("p");
+            descricao.textContent = "Descrição: " + etiqueta["descricao"];
+            etiquetaContainer.appendChild(descricao);
+          }
+
+          // Quantidade
+          if (etiqueta["quantidade"]) {
+            const quantidade = document.createElement("p");
+            quantidade.textContent = "Quantidade: " + etiqueta["quantidade"];
+            etiquetaContainer.appendChild(quantidade);
+          }
+
+          // Localização
+          if (etiqueta["localizacao"]) {
+            const local = document.createElement("p");
+            local.textContent = "Localização: " + etiqueta["localizacao"];
+            etiquetaContainer.appendChild(local);
+          }
+        });
+      }
+
+      const data = getParameterByName("data");
+      const etiquetasData = JSON.parse(data);
+      generateBarcodes(
+        etiquetasData.etiquetas,
+        etiquetasData.altura,
+        etiquetasData.proporcao,
+        etiquetasData.transferencia
+      );
+    </script>
+  </body>
+</html>

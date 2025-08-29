@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gerador Folha com Local do Pallet</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="template_a4_local.css"
+      media="screen"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="template_a4_local_print.css"
+      media="print"
+    />
+
+    <style>
+      body {
+        font-family: "Roboto", sans-serif;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background: white;
+      }
+
+      .controls {
+        background: rgba(0, 255, 255, 0.1);
+        padding: 25px;
+        margin: 30px;
+        border-radius: 20px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        width: 100%;
+        max-width: 600px;
+        backdrop-filter: blur(6px);
+        margin-bottom: 30px;
+        text-align: center;
+      }
+
+      h1 {
+        font-size: 1.8rem;
+        margin-bottom: 15px;
+        color: black;
+      }
+
+      p {
+        margin-bottom: 10px;
+        color: black;
+      }
+
+      input[type="file"] {
+        width: 100%;
+        padding: 10px;
+        border-radius: 12px;
+        border: none;
+        margin: 10px 0;
+        font-size: 1rem;
+      }
+
+      button {
+        width: 100%;
+        padding: 12px;
+        border: none;
+        border-radius: 12px;
+        background: #00ffff;
+        color: #000;
+        font-size: 1.1rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.3s;
+      }
+
+      button:hover {
+        background: #00cccc;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+      }
+
+      #print-container {
+        width: 100%;
+        background: white;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="controls no-print">
+      <h1>Gerar Folhas A4</h1>
+      <p>
+        Selecione um arquivo XLSX com as colunas:
+        <strong>Localização</strong>, <strong>Número do item</strong> e
+        <strong>Nome do produto</strong>.
+      </p>
+      <p>Obs: Os nomes das colunas devem estar exatamente assim escritos.</p>
+
+      <input type="file" id="fileUpload" accept=".xlsx" />
+      <button onclick="handleFileUpload()">Gerar e Imprimir</button>
+    </div>
+
+    <div id="print-container"></div>
+
+    <script>
+      function handleFileUpload() {
+        const fileUpload = document.getElementById("fileUpload");
+        const file = fileUpload.files[0];
+
+        if (!file) {
+          alert("Por favor, selecione um arquivo XLSX.");
+          return;
+        }
+
+        const fileExtension = file.name.split(".").pop().toLowerCase();
+        if (fileExtension !== "xlsx") {
+          alert("Por favor, envie um arquivo XLSX válido.");
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: "array" });
+          const sheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[sheetName];
+
+          const linhas = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+          const linhasNormalizadas = linhas.map(linha => {
+            const obj = {};
+            for (let chave in linha) obj[chave.trim().toLowerCase()] = linha[chave];
+            return obj;
+          });
+
+          const locais = getLocalizacoes(linhasNormalizadas);
+          gerarFolhasA4(locais);
+        };
+
+        reader.readAsArrayBuffer(file);
+      }
+
+      function getLocalizacoes(linhas) {
+        let locais = [];
+        linhas.forEach(linha => {
+          const local = linha["localização"];
+          if (!local) return;
+          locais.push(local);
+        });
+        return [...new Set(locais)];
+      }
+
+      function gerarFolhasA4(locais) {
+        const printContainer = document.getElementById("print-container");
+        printContainer.innerHTML = "";
+
+        locais.forEach(local => {
+          const folhaA4 = document.createElement("div");
+          folhaA4.className = "A4";
+
+          const cabecalho = document.createElement("div");
+          cabecalho.className = "cabecalho";
+          cabecalho.innerHTML = '<img class="logo" src="./ponsse.png" alt="">';
+
+          const barcodeSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+          cabecalho.appendChild(barcodeSvg);
+
+          if (local) JsBarcode(barcodeSvg, String(local), {
+            format: "CODE128",
+            displayValue: true,
+            fontSize: 11,
+            width: 1,
+            height: 30
+          });
+
+          folhaA4.appendChild(cabecalho);
+
+          const site = document.createElement("p");
+          site.className = "site";
+          site.textContent = "BR5-PARTS";
+          folhaA4.appendChild(site);
+
+          const nomeLocalP = document.createElement("p");
+          nomeLocalP.className = "nomeLocal";
+          nomeLocalP.textContent = local;
+          folhaA4.appendChild(nomeLocalP);
+
+          printContainer.appendChild(folhaA4);
+        });
+
+        // Impressão não modificada
+      }
+    </script>
+  </body>
+</html>

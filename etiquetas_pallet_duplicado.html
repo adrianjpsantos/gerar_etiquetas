@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Etiquetas</title>
+    <style>
+      /* Add some basic styling to make the page look better */
+      body {
+        font-family: Arial, sans-serif;
+      }
+      #barcodes-container {
+        margin: 0;
+        padding: 0;
+      }
+      .row{
+        display: inline-flex;
+      }
+
+      .etiqueta-container {
+        text-align: center;
+        display: flexbox;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        margin: 0;
+        padding: 0;
+        width: 10cm;
+        height: 6cm;
+        border: 1px solid black;
+      }
+      .etiqueta-container h1{
+        font-size: 2.5cm;
+      }
+
+      .etiqueta-container img {
+        margin: 0 auto;
+      }
+
+      h1 {
+        margin: 0;
+        margin-top: 5px;
+        font-size: large;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="barcodes-container"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
+    <script>
+      function getParameterByName(name) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(name);
+      }
+
+      function generateBarcodes(etiquetas, altura, proporcao) {
+        const container = document.getElementById("barcodes-container");
+        let row;
+
+        etiquetas.forEach((etiqueta, index) => {
+
+           row = document.createElement("div");
+            row.className = "row"
+            container.appendChild(row);
+
+          let count = 1;
+          while(count <= 2){
+const etiquetaContainer = document.createElement("div");
+          etiquetaContainer.className = "etiqueta-container";
+          row.appendChild(etiquetaContainer);
+
+          if (etiqueta["titulo"]) {
+            const title = document.createElement("h1");
+            title.textContent = etiqueta["titulo"];
+            etiquetaContainer.appendChild(title);
+          }
+
+          if(!etiqueta["titulo"]){
+            const caixa = etiqueta["codigo"].split("-")[3]
+            const title = document.createElement("h1");
+            title.textContent = "CX " + caixa;
+            etiquetaContainer.appendChild(title);
+          }
+
+          if (etiqueta["codigo"]) {
+            const img = document.createElement("img");
+            etiquetaContainer.appendChild(img);
+
+            JsBarcode(img, etiqueta["codigo"], {
+              format: "code39",
+              width: proporcao,
+              height: altura,
+              displayValue: true,
+            });
+          } else {
+            console.log(
+              "Código de peça não encontrado para a etiqueta:",
+              etiqueta
+            );
+          }
+          count++
+          }      
+        });
+      }
+
+      const data = getParameterByName("data");
+      const etiquetasData = JSON.parse(data);
+      generateBarcodes(
+        etiquetasData.etiquetas,
+        etiquetasData.altura,
+        etiquetasData.proporcao
+      );
+    </script>
+  </body>
+</html>

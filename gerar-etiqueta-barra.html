@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gerador de Etiquetas</title>
+</head>
+<body>
+    <content>
+        <form>
+            <h1>Escolha arquivo .csv</h1>
+            <input type="file" id="fileUpload" accept=".csv,.txt" />
+            <label for="altura">Altura</label>
+            <input type="number" id="altura" value="30" />
+            <label for="proporcao">Proporção</label>
+            <input type="number" id="proporcao" value="1" />
+
+            <button type="button" onclick="handleFileUploadUn()">Carregar por unidade</button>
+            <button type="button" onclick="handleFileUpload()">Carregar 2 por etiqueta</button>
+            <button type="button" onclick="handleFileUploadPalletUn()">PALLET - 2 por etiqueta</button>
+        </form>
+    </content>
+
+    <script>
+function handleFileUpload() {
+    const fileUpload = document.getElementById("fileUpload");
+    const file = fileUpload.files[0];
+
+    if (!file) {
+        alert("Por favor, selecione um arquivo.");
+        return;
+    }
+
+    const validExtensions = ['csv', 'txt'];
+    const fileExtension = file.name.split('.').pop().toLowerCase();
+
+    if (!validExtensions.includes(fileExtension)) {
+        alert("Por favor, envie um arquivo CSV ou TXT válido.");
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const csvData = e.target.result;
+        const etiquetas = parseCsvData(csvData);
+        const altura = document.getElementById('altura').value;
+        const proporcao = document.getElementById('proporcao').value;
+        const etiquetasJson = JSON.stringify({ etiquetas, altura, proporcao });
+        window.open(`etiquetas.html?data=${etiquetasJson}`, '_blank');
+    };
+    reader.readAsText(file);
+}
+
+function handleFileUploadUn() {
+    const fileUpload = document.getElementById("fileUpload");
+    const file = fileUpload.files[0];
+
+    if (!file) {
+        alert("Por favor, selecione um arquivo.");
+        return;
+    }
+
+    const validExtensions = ['csv', 'txt'];
+    const fileExtension = file.name.split('.').pop().toLowerCase();
+
+    if (!validExtensions.includes(fileExtension)) {
+        alert("Por favor, envie um arquivo CSV ou TXT válido.");
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const csvData = e.target.result;
+        const etiquetas = parseCsvData(csvData);
+        const altura = document.getElementById('altura').value;
+        const proporcao = document.getElementById('proporcao').value;
+        const etiquetasJson = JSON.stringify({ etiquetas, altura, proporcao });
+        window.open(`etiquetas_unidade.html?data=${etiquetasJson}`, '_blank');
+    };
+    reader.readAsText(file);
+}
+
+function handleFileUploadPalletA4() {
+    const fileUpload = document.getElementById("fileUpload");
+    const file = fileUpload.files[0];
+
+    if (!file) {
+        alert("Por favor, selecione um arquivo.");
+        return;
+    }
+
+    const validExtensions = ['csv', 'txt'];
+    const fileExtension = file.name.split('.').pop().toLowerCase();
+
+    if (!validExtensions.includes(fileExtension)) {
+        alert("Por favor, envie um arquivo CSV ou TXT válido.");
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const csvData = e.target.result;
+        const etiquetas = parseCsvData(csvData);
+        const altura = document.getElementById('altura').value;
+        const proporcao = document.getElementById('proporcao').value;
+        const etiquetasJson = JSON.stringify({ etiquetas, altura, proporcao });
+        window.open(`etiquetas_pallet_duplicado.html?data=${etiquetasJson}`, '_blank');
+    };
+    reader.readAsText(file);
+}
+
+function parseCsvData(csvData) {
+    const lines = csvData.trim().split('\n');
+    const headers = lines.shift().trim().split(";");
+    const etiquetas = [];
+
+    lines.forEach((line) => {
+        if (line.trim() !== '') {
+            const etiqueta = {};
+            const values = line.trim().split(";");
+            headers.forEach((header, index) => {
+                etiqueta[header.trim()] = values[index].trim();
+            });
+            etiquetas.push(etiqueta);
+        }
+    });
+
+    return etiquetas;
+}
+    </script>
+</body>
+</html>

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gerar Etiqueta BIN</title>
+  <style>
+    :root{
+      --bg: #0f172a;           /* slate-900 */
+      --accent: #22d3ee;       /* cyan-400 */
+      --accent-2: #a78bfa;     /* violet-400 */
+      --text: #e5e7eb;         /* gray-200 */
+      --muted: #94a3b8;        /* slate-400 */
+      --ring: rgba(34,211,238,.45);
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+
+    *{ box-sizing: border-box; }
+    html,body{ height:100%; margin:0; }
+    body{
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, "Helvetica Neue", Arial;
+      background: radial-gradient(1200px 600px at 10% -10%, rgba(167,139,250,.15), transparent),
+                  radial-gradient(1200px 600px at 110% 110%, rgba(34,211,238,.12), transparent),
+                  var(--bg);
+      color:var(--text);
+      display:flex; flex-direction:column; align-items:center;
+      padding:32px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.25rem, 1.2rem + 1.2vw, 2rem);
+      letter-spacing: .3px;
+    }
+
+    .controls{
+      background: linear-gradient(145deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      border: 1px solid rgba(255,255,255,.06);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      padding: 20px;
+      margin-bottom: 20px;
+      text-align:center;
+      width: 100%;
+      max-width: 500px;
+    }
+
+    .controls p{
+      margin: 8px 0 16px;
+      color: var(--muted);
+    }
+
+    .controls input{
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,.15);
+      background: rgba(255,255,255,.08);
+      color: var(--text);
+      width: 100%;
+      margin-bottom: 12px;
+      outline: none;
+    }
+
+    .controls input:focus{
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--ring);
+    }
+
+    .controls button{
+      background: var(--accent);
+      border:none;
+      padding: 10px 18px;
+      border-radius: 12px;
+      cursor:pointer;
+      font-weight:600;
+      color:#0f172a;
+      transition: background .2s ease, transform .15s ease;
+    }
+    .controls button:hover{ background:#06b6d4; transform: translateY(-2px); }
+
+    #etiqueta-container {
+      width: 100%;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 5cm;
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      background:linear-gradient(145deg, rgba(255,255,255,.04), rgba(255,255,255,.01));
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.08);
+    }
+
+    #etiqueta-container h1{
+      font-size: 1.4rem;
+      margin-bottom: 8px;
+    }
+
+    @media print {
+      @page {
+        size: auto;
+        margin: 50;
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+        display: block;
+      }
+
+      #etiqueta-container {
+        width: 100%;
+        height: auto;
+        display: block;
+        page-break-after: auto;
+        text-align: center;
+      }
+
+      .no-print{ display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="controls no-print">
+    <h1>Gerar Etiqueta BIN</h1>
+    <p>Digite o código para imprimir</p>
+    <input type="text" id="codigo" placeholder="Ex: 12345" />
+    <button onclick="gerarEtiqueta()">Gerar e Imprimir</button>
+  </div>
+
+  <div id="etiqueta-container"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
+  <script>
+    function gerarEtiqueta(){
+      const codigo = document.getElementById("codigo").value;
+      const etiquetaContainer = document.getElementById("etiqueta-container");
+      etiquetaContainer.innerHTML = ""; // limpa antes de gerar
+
+      const title = document.createElement("h1");
+      title.textContent = codigo || "ERRO";
+      etiquetaContainer.appendChild(title);
+
+      const barcodeSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      etiquetaContainer.appendChild(barcodeSvg);
+
+      JsBarcode(barcodeSvg, String(codigo || "ERRO"), {
+        format: "CODE128",
+        displayValue: true,
+        fontSize: 11,
+        width: codigo ? 2 : 1,
+        height: 30,
+      });
+    }
+  </script>
+</body>
+</html>

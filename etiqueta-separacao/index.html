@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Importar XLSX - Etiquetas</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+      body {
+        margin: 0;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        padding: 40px;
+        color: #fff;
+      }
+      .container {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 30px;
+        border-radius: 20px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        width: 100%;
+        max-width: 500px;
+        backdrop-filter: blur(8px);
+      }
+      h1 {
+        text-align: center;
+        margin-bottom: 25px;
+        font-size: 1.8rem;
+        letter-spacing: 1px;
+      }
+      label {
+        font-weight: 500;
+        display: block;
+        margin-top: 15px;
+        margin-bottom: 5px;
+      }
+      input[type="file"],
+      input[type="number"],
+      input[type="text"] {
+        width: 100%;
+        padding: 10px;
+        border-radius: 12px;
+        border: none;
+        outline: none;
+        margin-bottom: 10px;
+        font-size: 1rem;
+      }
+      button {
+        width: 100%;
+        padding: 12px;
+        background: #ff9800;
+        border: none;
+        border-radius: 12px;
+        font-size: 1.1rem;
+        font-weight: bold;
+        cursor: pointer;
+        color: #fff;
+        transition: 0.3s;
+        margin-top: 15px;
+      }
+      button:hover {
+        background: #e68900;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Gerar Etiquetas</h1>
+      <label>Arquivo XLSX:</label>
+      <input type="file" id="fileInput" accept=".xlsx,.xls" />
+
+      <label>Altura do código de barras:</label>
+      <input type="number" id="altura" value="30" />
+
+      <label>Largura da barra (proporção):</label>
+      <input type="number" id="proporcao" value="2" />
+
+      <label>Número da Transferência:</label>
+      <input type="text" id="transferencia" />
+
+      <button onclick="processFile()">Gerar Etiquetas</button>
+    </div>
+
+    <script>
+      function processFile() {
+        const fileInput = document.getElementById("fileInput");
+        const altura = parseInt(document.getElementById("altura").value);
+        const proporcao = parseInt(document.getElementById("proporcao").value);
+        const transferencia = document.getElementById("transferencia").value;
+
+        if (!fileInput.files.length) {
+          alert("Selecione um arquivo XLSX primeiro!");
+          return;
+        }
+
+        const file = fileInput.files[0];
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: "array" });
+
+          // Pega a primeira aba
+          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+          const jsonData = XLSX.utils.sheet_to_json(firstSheet, { defval: "" });
+
+          // Monta objeto no formato esperado
+          const etiquetas = jsonData.map((row) => ({
+            numeroItem: row["Número do item"],
+            descricao: row["Nome do produto"],
+            quantidade: row["Quantidade de trabalho"],
+            localizacao: row["Localização"],
+          }));
+
+          const etiquetasData = {
+            etiquetas,
+            altura,
+            proporcao,
+            transferencia,
+          };
+
+          // Converte para string segura na URL
+          const encodedData = encodeURIComponent(JSON.stringify(etiquetasData));
+          window.open("etiquetas_separacao.html?data=" + encodedData, "_blank");
+        };
+
+        reader.readAsArrayBuffer(file);
+      }
+    </script>
+  </body>
+</html>
