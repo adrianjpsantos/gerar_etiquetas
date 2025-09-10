@@ -1,132 +1,189 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
+  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Gerador de Etiquetas</title>
-</head>
-<body>
-    <content>
-        <form>
-            <h1>Escolha arquivo .csv</h1>
-            <input type="file" id="fileUpload" accept=".csv,.txt" />
-            <label for="altura">Altura</label>
-            <input type="number" id="altura" value="30" />
-            <label for="proporcao">Proporção</label>
-            <input type="number" id="proporcao" value="1" />
+    <style>
+        /* Estilos globais para o corpo da página */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #eef2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
 
-            <button type="button" onclick="handleFileUploadUn()">Carregar por unidade</button>
-            <button type="button" onclick="handleFileUpload()">Carregar 2 por etiqueta</button>
-            <button type="button" onclick="handleFileUploadPalletUn()">PALLET - 2 por etiqueta</button>
-        </form>
+        /* Estilo para o contêiner do formulário */
+        .container {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        /* Título */
+        .container h1 {
+            color: #333333;
+            margin-bottom: 30px;
+            font-size: 1.8em;
+        }
+
+        /* Estilo para cada grupo de controle (label + input) */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            color: #555555;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #dddddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        /* Estilo para os botões */
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .button-group button {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            color: #ffffff;
+        }
+
+        .button-group button:hover {
+            transform: translateY(-2px);
+        }
+
+        .button-group button:active {
+            transform: translateY(0);
+        }
+
+        /* Cores específicas para os botões */
+        .button-group button:nth-child(1) {
+            background-color: #28a745; /* Verde para "Carregar por unidade" */
+        }
+        .button-group button:nth-child(2) {
+            background-color: #007bff; /* Azul para "Carregar 2 por etiqueta" */
+        }
+        .button-group button:nth-child(3) {
+            background-color: #6c757d; /* Cinza para "PALLET" */
+        }
+    </style>
+  </head>
+  <body>
+    <content>
+      <form>
+        <h1>Escolha arquivo .XLSX</h1>
+        <H1>Arquivo deve conter colunas "CODIGO" e "LOCAL"</H1>
+        <input type="file" id="fileUpload" accept=".xlsx" />
+
+        <button type="button" onclick="handleFileUploadDefault()">
+          Gerar
+        </button>
+      </form>
     </content>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script>
-function handleFileUpload() {
-    const fileUpload = document.getElementById("fileUpload");
-    const file = fileUpload.files[0];
+      function handleFileUpload(targetPage) {
+        const fileUpload = document.getElementById("fileUpload");
+        const file = fileUpload.files[0];
 
-    if (!file) {
-        alert("Por favor, selecione um arquivo.");
-        return;
-    }
-
-    const validExtensions = ['csv', 'txt'];
-    const fileExtension = file.name.split('.').pop().toLowerCase();
-
-    if (!validExtensions.includes(fileExtension)) {
-        alert("Por favor, envie um arquivo CSV ou TXT válido.");
-        return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        const csvData = e.target.result;
-        const etiquetas = parseCsvData(csvData);
-        const altura = document.getElementById('altura').value;
-        const proporcao = document.getElementById('proporcao').value;
-        const etiquetasJson = JSON.stringify({ etiquetas, altura, proporcao });
-        window.open(`etiquetas.html?data=${etiquetasJson}`, '_blank');
-    };
-    reader.readAsText(file);
-}
-
-function handleFileUploadUn() {
-    const fileUpload = document.getElementById("fileUpload");
-    const file = fileUpload.files[0];
-
-    if (!file) {
-        alert("Por favor, selecione um arquivo.");
-        return;
-    }
-
-    const validExtensions = ['csv', 'txt'];
-    const fileExtension = file.name.split('.').pop().toLowerCase();
-
-    if (!validExtensions.includes(fileExtension)) {
-        alert("Por favor, envie um arquivo CSV ou TXT válido.");
-        return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        const csvData = e.target.result;
-        const etiquetas = parseCsvData(csvData);
-        const altura = document.getElementById('altura').value;
-        const proporcao = document.getElementById('proporcao').value;
-        const etiquetasJson = JSON.stringify({ etiquetas, altura, proporcao });
-        window.open(`etiquetas_unidade.html?data=${etiquetasJson}`, '_blank');
-    };
-    reader.readAsText(file);
-}
-
-function handleFileUploadPalletA4() {
-    const fileUpload = document.getElementById("fileUpload");
-    const file = fileUpload.files[0];
-
-    if (!file) {
-        alert("Por favor, selecione um arquivo.");
-        return;
-    }
-
-    const validExtensions = ['csv', 'txt'];
-    const fileExtension = file.name.split('.').pop().toLowerCase();
-
-    if (!validExtensions.includes(fileExtension)) {
-        alert("Por favor, envie um arquivo CSV ou TXT válido.");
-        return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        const csvData = e.target.result;
-        const etiquetas = parseCsvData(csvData);
-        const altura = document.getElementById('altura').value;
-        const proporcao = document.getElementById('proporcao').value;
-        const etiquetasJson = JSON.stringify({ etiquetas, altura, proporcao });
-        window.open(`etiquetas_pallet_duplicado.html?data=${etiquetasJson}`, '_blank');
-    };
-    reader.readAsText(file);
-}
-
-function parseCsvData(csvData) {
-    const lines = csvData.trim().split('\n');
-    const headers = lines.shift().trim().split(";");
-    const etiquetas = [];
-
-    lines.forEach((line) => {
-        if (line.trim() !== '') {
-            const etiqueta = {};
-            const values = line.trim().split(";");
-            headers.forEach((header, index) => {
-                etiqueta[header.trim()] = values[index].trim();
-            });
-            etiquetas.push(etiqueta);
+        if (!file) {
+          alert("Por favor, selecione um arquivo.");
+          return;
         }
-    });
 
-    return etiquetas;
-}
+        const fileExtension = file.name.split(".").pop().toLowerCase();
+
+        if (fileExtension !== "xlsx") {
+          alert("Por favor, envie um arquivo XLSX válido.");
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: "array" });
+
+          const firstSheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[firstSheetName];
+
+          const json = XLSX.utils.sheet_to_json(worksheet);
+
+          const etiquetas = [];
+
+          json.forEach((row) => {
+            etiquetas.push({
+              titulo: row["CODIGO"], 
+              codigo: row["CODIGO"], 
+            });
+
+            const caixa = "CX "+ row["LOCAL"].substring(8)
+            console.log(caixa)
+            etiquetas.push({
+              titulo: caixa,
+              codigo: row["LOCAL"],
+            });
+          });
+
+          const altura = 30;
+          const proporcao = 1;
+          const etiquetasJson = JSON.stringify({
+            etiquetas,
+            altura,
+            proporcao,
+          });
+
+          window.open(`${targetPage}?data=${etiquetasJson}`, "_blank");
+        };
+        reader.readAsArrayBuffer(file);
+      }
+
+      function handleFileUploadDefault() {
+        handleFileUpload("./etiquetas.html");
+      }
+
+      function handleFileUploadUn() {
+        handleFileUpload("etiquetas_unidade.html");
+      }
+
+      function handleFileUploadPalletA4() {
+        handleFileUpload("./etiquetas_pallet_duplicado.html");
+      }
     </script>
-</body>
+  </body>
 </html>
