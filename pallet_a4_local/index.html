@@ -90,15 +90,13 @@
   </head>
   <body>
     <div class="controls no-print">
-      <h1>Gerar Folhas A4</h1>
+      <h1>Gerar Folhas A4 para os pallet's</h1>
       <p>
-        Selecione um arquivo XLSX com as colunas:
-        <strong>Localização</strong>, <strong>Número do item</strong> e
-        <strong>Nome do produto</strong>.
+        Selecione um arquivo XLSX com a coluna:
+        <strong>Localização</strong>
       </p>
-      <p>Obs: Os nomes das colunas devem estar exatamente assim escritos.</p>
-
       <input type="file" id="fileUpload" accept=".xlsx" />
+      <input type="checkbox" id="checkboxVazio" value="true"/>
       <button onclick="handleFileUpload()">Gerar e Imprimir</button>
     </div>
 
@@ -107,6 +105,7 @@
     <script>
       function handleFileUpload() {
         const fileUpload = document.getElementById("fileUpload");
+        const checkboxVazio = document.getElementById("checkboxVazio");
         const file = fileUpload.files[0];
 
         if (!file) {
@@ -176,9 +175,10 @@
 
           folhaA4.appendChild(cabecalho);
 
+          const isChecked = checkboxVazio.checked;
           const site = document.createElement("p");
           site.className = "site";
-          site.textContent = "BR5-PARTS";
+          site.textContent = isChecked ? "VAZIO" : "BR5-PARTS";
           folhaA4.appendChild(site);
 
           const nomeLocalP = document.createElement("p");
